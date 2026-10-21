@@ -325,7 +325,7 @@ def mostrar_bandeja(resultado, id_lote):
         guardar = st.form_submit_button("Guardar revisión")
 
     if guardar:
-        guardar_revision(
+        guardar_revision_desde_app(
             id_lote=id_lote,
             id_transaccion=detalle["id_transaccion"],
             estado=estado,
@@ -443,6 +443,75 @@ def calcular_id_lote(historial, operaciones):
     return huella.hexdigest()
 
 
+def es_demo_publica():
+    try:
+        return bool(
+            st.secrets.get("modo_demo_publica", True)
+        )
+    except FileNotFoundError:
+        # Sin configuración, usamos la demo por sesión.
+        return True
+
+
+def cargar_revisiones_desde_app(id_lote):
+    if not es_demo_publica():
+        inicializar_bd()
+        return leer_revisiones(id_lote)
+
+    lotes = st.session_state.get("revisiones_demo", {})
+    registros = lotes.get(id_lote, {})
+
+    return pd.DataFrame(
+        list(registros.values()),
+        columns=[
+            "id_transaccion",
+            "estado_revision",
+            "comentario_revision",
+            "actualizado_utc",
+        ],
+    )
+
+
+def guardar_revision_desde_app(
+    id_lote,
+    id_transaccion,
+    estado,
+    comentario,
+):
+    comentario = comentario.strip()
+
+    if estado not in ESTADOS_REVISION:
+        raise ValueError("Estado de revisión no permitido.")
+
+    if len(comentario) > 2000:
+        raise ValueError(
+            "El comentario no puede superar los 2000 caracteres."
+        )
+
+    if not es_demo_publica():
+        guardar_revision(
+            id_lote,
+            id_transaccion,
+            estado,
+            comentario,
+        )
+        return
+
+    lotes = st.session_state.get("revisiones_demo", {})
+
+    if id_lote not in lotes:
+        lotes[id_lote] = {}
+
+    lotes[id_lote][id_transaccion] = {
+        "id_transaccion": id_transaccion,
+        "estado_revision": estado,
+        "comentario_revision": comentario,
+        "actualizado_utc": pd.Timestamp.now(tz="UTC").isoformat(),
+    }
+
+    st.session_state["revisiones_demo"] = lotes
+
+
 def main():
     st.set_page_config(
         page_title="RadarFin",
@@ -459,6 +528,18 @@ def main():
         "no implica fraude ni produce bloqueos automáticos."
     )
 
+    if es_demo_publica():
+        st.caption(
+            "Modo demostración: las revisiones son temporales "
+            "y pertenecen a esta sesión. "
+            "Descarga los resultados para conservar una copia."
+        )
+    else:
+        st.caption(
+            "Modo local: las revisiones se conservan "
+            "en la base de datos de esta computadora."
+        )
+
     historial, operaciones = cargar_datos()
 
     with st.spinner("Analizando operaciones..."):
@@ -466,9 +547,7 @@ def main():
 
     id_lote = calcular_id_lote(historial, operaciones)
 
-    inicializar_bd()
-
-    revisiones = leer_revisiones(id_lote)
+    revisiones = cargar_revisiones_desde_app(id_lote)
 
     resultado = resultado.merge(
         revisiones,

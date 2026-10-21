@@ -170,3 +170,16 @@ La persistencia comprobada corresponde a la ejecución local.
 - Los clientes sin suficiente historial no pueden evaluarse por monto
   ni horario.
 - No incluye autenticación, roles ni historial de cambios de revisiones.
+
+## Modos de ejecución
+
+La ejecución local utiliza SQLite para conservar las revisiones.
+
+La demo pública utiliza almacenamiento temporal por sesión:
+cada visitante tiene sus propios estados y comentarios.
+Estos pueden perderse al recargar la página o finalizar la sesión.
+La descarga de resultados permite conservar una copia.
+
+El modo se configura mediante `modo_demo_publica` en la
+configuración de Streamlit: `false` para SQLite local y
+`true` para la demo temporal.
