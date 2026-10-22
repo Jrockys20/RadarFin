@@ -1,6 +1,6 @@
 # RadarFin
 
-Aplicación web para priorizar la revisión de transacciones financieras
+Demo básica de una aplicación web para priorizar la revisión de transacciones financieras
 ficticias mediante reglas explicables.
 
 Una operación inusual no implica fraude. RadarFin apoya la revisión

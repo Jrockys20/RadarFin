@@ -1,0 +1,28 @@
+[theme]
+base = "dark"
+primaryColor = "#C01864"
+backgroundColor = "#080B12"
+secondaryBackgroundColor = "#111827"
+textColor = "#F4F7FB"
+font = "Inter, sans-serif"
+borderColor = "#283348"
+dataframeHeaderBackgroundColor = "#192235"
+dataframeHeaderTextColor = "#9BA8BA"
+baseRadius = "0.6rem"
+paddingTop = "1rem"
+showWidgetBorder = true
+showSidebarBorder = true
+
+[theme.sidebar]
+backgroundColor = "#0D1220"
+secondaryBackgroundColor = "#111827"
+paddingTop = "1rem"
+
+[[theme.fontFaces]]
+family = "Inter"
+url = "app/static/InterVariable.woff2"
+weight = "100 900"
+style = "normal"
+
+[server]
+enableStaticServing = true
